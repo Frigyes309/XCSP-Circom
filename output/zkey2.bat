@@ -1,0 +1,1 @@
+( echo Smuky ) ^| snarkjs zkey contribute Converter_0000.zkey Converter_0001.zkey --name="Smuky" -v'

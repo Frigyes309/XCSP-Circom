@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<instance format="XCSP3" type="CSP">
+  <constraints>
+    <sum>
+      <list> X1 X2 </list>
+      <coeffs> 1 2 </coeffs>
+      <condition> (eq,15) </condition>
+    </sum>
+  </constraints>
+</instance>

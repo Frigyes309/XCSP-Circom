@@ -1,0 +1,1 @@
+( echo Smuky ) ^| snarkjs powersoftau contribute pot12_0000.ptau pot12_0001.ptau --name="Smuky" -v'
