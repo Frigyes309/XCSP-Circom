@@ -118,6 +118,11 @@ namespace Converter
                         output.Add(AllDifferent.calling(constraint.SelectNodes("list")[0].InnerText.Split(' ').Where(x => x != "").ToArray()));
                         break;
                     case "sum":
+                        string[] array = constraint.SelectNodes("list")[0].InnerText.Split(' ').Where(x => x != "").ToArray();
+                        while (array.Length < 2)
+                        {
+                            array = array.Concat(new string[] { "0" }).ToArray();
+                        }
                         string[] coeffs;
                         if (constraint.SelectNodes("coeffs").Count != 0)
                         {
@@ -132,8 +137,8 @@ namespace Converter
                                 coeffs[i] = "1";
                             }
                         }
-                        string equal = Condition(constraint.SelectNodes("condition")[0].InnerText).Split(' ')[1]; //TODO - Implement the Condition method
-                        output.Add(Sum.calling(constraint.SelectNodes("list")[0].InnerText.Split(' ').Where(x => x != "").ToArray(), coeffs, equal));
+                        string equal = Condition(constraint.SelectNodes("condition")[0].InnerText).Split(' ')[1]; //TODO - Implement special conditions
+                        output.Add(Sum.calling(array, coeffs, equal));
                         break;
                     case "minimum":
                         output.Add(Minimum.calling(constraint.SelectNodes("list")[0].InnerText.Split(' ').Where(x => x != "").ToArray()));

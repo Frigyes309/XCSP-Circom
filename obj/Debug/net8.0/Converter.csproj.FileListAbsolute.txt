@@ -33,3 +33,4 @@ C:\HDD\Egyetem\Szakdolgozat\Converter\bin\Debug\net8.0\Converter.dll
 C:\HDD\Egyetem\Szakdolgozat\Converter\bin\Debug\net8.0\Converter.pdb
 C:\HDD\Egyetem\Szakdolgozat\Converter\obj\Debug\net8.0\Converter.genruntimeconfig.cache
 C:\HDD\Egyetem\Szakdolgozat\Converter\obj\Debug\net8.0\ref\Converter.dll
+C:\HDD\Egyetem\Szakdolgozat\Converter\obj\Debug\net8.0\Converter.sourcelink.json

@@ -29,11 +29,28 @@ namespace Converter.Constraints
                 result += $"    comparator_sum_{counter}.in[{i}] <== {values[i]};\n";
                 result += $"    comparator_sum_{counter}.coeffs[{i}] <== {coeffs[i]};\n";
             }
-            result += $"    component comparator_sum_equality_{counter} = IsEqual();\n";
+            result += $"    component comparator_sum_equality_{counter} = {Equality(equal)};\n";
             result += $"    comparator_sum_equality_{counter}.in[0] <== comparator_sum_{counter}.sum;\n";
             result += $"    comparator_sum_equality_{counter}.in[1] <== {equal};\n";
             result += $"    sum_{counter}_output <== comparator_sum_equality_{counter}.out;\n";
             return  result;
+        }
+
+        private static string Equality(string equal) {
+            switch (equal) {
+                case "eq":
+                    return "IsEqual()";
+                case "gt":
+                    return "GreaterThan(252)";
+                case "lt":
+                    return "LessThan(252)";
+                case "ge":
+                    return "GreaterEqThan(252)";
+                case "le":
+                    return "LessEqThan(252)";
+                default:
+                    return "IsEqual()";
+            }
         }
     }
 }

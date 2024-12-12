@@ -1,20 +1,28 @@
 pragma circom 2.1.8;
 include "circuits/comparators.circom";
 
-template Sum2(length) { 
-    signal input in[length];
-    signal input coeffs[length];
-    signal output sum;
-    component subSum[length - 1]; //We do not use the whole array, but this way the indexing will be fine
-    subSum[0] = Sum();
-    subSum[0].in[0] <== in[0] * coeffs[0];
-    subSum[0].in[1] <== in[1] * coeffs[1];
-    for (var i = 2; i < length; i++) {
-        subSum[i - 1] = Sum();
-        subSum[i - 1].in[0] <== in[i] * coeffs[i];
-        subSum[i - 1].in[1] <== subSum[i - 2].sum;
+template Minimum(length) { 
+    signal input values[length];
+    signal output min;
+
+    component local_min[length];
+    component comparator[length];
+    component sum[length];
+    local_min[0] = Store();
+    local_min[0].value <== values[0];
+
+    for (var i = 1; i < length; i++) {
+        comparator[i] = LessThan(252);
+        comparator[i].in[0] <== values[i];
+        comparator[i].in[1] <== local_min[i - 1].stored_value;
+
+        local_min[i] = Store();
+        sum[i] = Sum();
+        sum[i].in[0] <== values[i] * comparator[i].out;
+        sum[i].in[1] <== local_min[i - 1].stored_value * (1 - comparator[i].out);
+        local_min[i].value <== sum[i].sum;
     }
-    sum <== subSum[length - 2].sum;
+    min <== local_min[length - 1].stored_value;
 }
 
 template Sum() { 
@@ -23,20 +31,22 @@ template Sum() {
     sum <== in[0] + in[1];
 }
 
+template Store() { 
+    signal input value;
+    signal output stored_value;
+    stored_value <== value;
+}
+
+
 template Main() {
 
     signal input X1;
     signal input X2;
-    signal output sum_1_output;
-    component comparator_sum_1 = Sum2(2);
-    comparator_sum_1.in[0] <== X1;
-    comparator_sum_1.coeffs[0] <== 1;
-    comparator_sum_1.in[1] <== X2;
-    comparator_sum_1.coeffs[1] <== 2;
-    component comparator_sum_equality_1 = IsEqual();
-    comparator_sum_equality_1.in[0] <== comparator_sum_1.sum;
-    comparator_sum_equality_1.in[1] <== 15;
-    sum_1_output <== comparator_sum_equality_1.out;
+    signal output min_1_output;
+    component comparator_min_1 = Minimum(2);
+    comparator_min_1.values[0] <== X1;
+    comparator_min_1.values[1] <== X2;
+    min_1_output <== comparator_min_1.min;
 
 
 }
