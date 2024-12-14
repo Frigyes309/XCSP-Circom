@@ -1,8 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <instance format="XCSP3" type="CSP">
-  <constraints>
-    <element>
-      <list> X1 X2 </list>
-    </element>
-  </constraints>
+<variables>
+<!-- Rating: 1=AAA, 2=AA, 3=A, 4=BBB, 5=BB or below -->
+<var id="Rating" type="integer">1..5</var>
+<var id="ICR" type="integer">0..20</var> <!-- Interest Coverage -->
+<var id="DE" type="integer">0..100</var> <!-- Debt/Equity % -->
+<var id="OLC" type="integer">0..150</var> <!-- Op. Lease / Assets % -->
+</variables>
+<constraints>
+<!-- AAA Rating -->
+<intension>
+<function>(eq(Rating,1) iff (and(ge(ICR,15),le(DE,20),le(OLC,40))))</function>
+</intension>
+<!-- AA Rating -->
+<intension>
+<function>(eq(Rating,2) iff (and(ge(ICR,10),le(DE,35),le(OLC,60))))</function>
+</intension>
+<!-- A Rating -->
+<intension>
+<function>(eq(Rating,3) iff (and(ge(ICR,6),le(DE,50),le(OLC,80))))</function>
+</intension>
+<!-- BBB Rating -->
+<intension>
+<function>(eq(Rating,4) iff (and(ge(ICR,3),le(DE,70),le(OLC,100))))</function>
+</intension>
+<!-- BB or below -->
+<intension>
+<function>(eq(Rating,5) iff (or(lt(ICR,3),gt(DE,70),gt(OLC,100))))</function>
+</intension>
+</constraints>
+<annotations>
+<decision>Rating</decision>
+</annotations>
 </instance>

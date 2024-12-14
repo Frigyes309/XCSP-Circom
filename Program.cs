@@ -11,6 +11,7 @@ namespace Converter
     class Program
     {
         static readonly string[] constraints = {"intension", "extension", "regular", "mdd", "allDifferent", "allEqual", "ordered", "sum", "count", "nValues", "cardinality", "minimum", "maximum", "element", "channel", "stretch", "noOverlap", "cumulative", "instantiation", "slide"};
+        static int intensionCounter = 0;
 
         static void Main(string[] args)
         {
@@ -32,9 +33,32 @@ namespace Converter
             // Collect unique variables
             HashSet<string> variables = new HashSet<string>();
 
+            HashSet<string> intensionComponents = new HashSet<string>();
+
             foreach (XmlNode constraint in filteredConstraints)
             {
-                constraintTypes.Add(constraint.LocalName);
+                if (constraint.LocalName != "intension")
+                {
+                    constraintTypes.Add(constraint.LocalName);
+                } else {
+                    string intension = "intension-";
+                    string[] data = constraint.InnerText.Split("iff").Select(x => x.Trim()).ToArray();
+                    string value = data[0].Split(",").Last().Replace(")", "").Trim();
+                    intension += value + "-";
+                    string connection = (data[1].Contains("and")) ? "and" : "or";
+                    intension += connection + "-" + (++intensionCounter);
+                    string[] info = data[1].Split(connection)[1].Substring(1).Replace(")", "").Trim().Split(",");
+                    for (int i = 0; i < info.Length; i += 2) {
+                        intension += "-" + info[i].Split("(")[0];
+                        intension += "-" + info[i + 1];
+                    }
+                    constraintTypes.Add(intension);
+                    intension += ";"+ intensionCounter + ";";
+                    for (int i = 0; i < info.Length; i += 2) {
+                        intension += (info[i].Split("(").Last()) + ";";
+                    }
+                    intensionComponents.Add(intension);
+                }
                 switch (constraint.LocalName)
                 {
                     case "allDifferent":
@@ -64,6 +88,13 @@ namespace Converter
                         }
                         break;
                     default:
+                        if (constraint.LocalName.Contains("intension"))
+                        {
+                            if (!constraintTypes.Contains("product"))
+                            {
+                                constraintTypes.Add("product");
+                            }
+                        }
                         break;
                 }
 
@@ -108,7 +139,6 @@ namespace Converter
                 output.Add($"    signal input {i.Key};");
             }
 
-            // Insert the calling of the components
             foreach (var constraint in filteredConstraints)
             {
                 string constraintType = constraint.LocalName;
@@ -159,8 +189,34 @@ namespace Converter
                         output.Add(Identity.component());
                         break;
                     default:
+                        /*if (constraintType.Contains("intension"))
+                        {
+                            //string[] data = constraint.InnerText.Split("-").Where(x => x != "").ToArray();
+                            string[] data = constraint.InnerText.Split("iff")[1].Trim().Split(",");
+                            List<string> components = new List<string>();
+                            for (int i = 0; i < data.Length; i += 2) {
+                                components.Add(data[i].Split("(").Last());
+                            }
+                            output.Add(Intension.calling((++intensionGrowingCounter).ToString(), components.ToArray()));
+                        }*/
+                        if (!constraintType.Contains("intension"))
+                            Console.WriteLine($"The constraint {constraintType} is not supported yet.");
                         break;
                 }
+            }
+
+            // Add the intension components
+            foreach (var component in intensionComponents)
+            {
+                string[] data2 = component.Split(";")[0].Split("-");
+                List<string> name_gen = new List<string>();
+                for (int i = 4; i < data2.Length; i += 2)
+                {
+                    name_gen.Add(data2[i]);
+                }
+                name_gen.Add(data2[2]);
+                string[] data = component.Split(";");
+                output.Add(Intension.calling(data[1], data[2..], name_gen.ToArray()));
             }
 
             output.Add("\n}\n\ncomponent main = Main();");
@@ -182,9 +238,8 @@ namespace Converter
 
             // Filter the nodes based on their local name
             var filteredConstraints = allConstraints.Cast<XmlNode>()
-                .Where(node => constraints.Contains(node.LocalName))
+                .Where(node => constraints.Contains(node.LocalName) || node.LocalName == "constraint")
                 .ToList();
-
             
             return filteredConstraints;
         }
@@ -213,6 +268,10 @@ namespace Converter
                         break;
                     case "sumIdentity":
                         output.Add(SumIdentity.component() + "\n");
+                        break;
+                    case "product":
+                        output.Add(ProductIdentity.component() + "\n");
+                        output.Add(Product.component() + "\n");
                         break;
                     case "count":
                         Console.WriteLine("Count is not supported yet.");
@@ -265,7 +324,24 @@ namespace Converter
                     case "ordered":
                         Console.WriteLine("Ordered is not supported yet.");
                         break;
+                    /*case "intension":
+                        //string data = constraint.SelectText("intension");
+                        output.Add(Intension.component(new string[] {""}, new string[] {""}, "and", "and") + "\n");
+                        break;*/
                     default:
+                        if (constraint.Contains("intension"))
+                        {
+                            string[] data = constraint.Split("-");
+                            List<string> components = new List<string>();
+                            List<string> inputs = new List<string>();
+                            for (int i = 4; i < data.Length; i += 2) {
+                                components.Add(data[i]);
+                                inputs.Add(data[i + 1]);
+                            }
+                            output.Add(Intension.component(inputs.ToArray(), components.ToArray(), data[2], data[1], data[3]) + "\n");
+                        } else {
+                            Console.WriteLine($"The constraint {constraint} is not supported yet.");
+                        }
                         break;
                 }
             }
